@@ -18,3 +18,5 @@ build
 lib
 include
 tmp
+.cproject
+.project

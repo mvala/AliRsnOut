@@ -18,9 +18,12 @@ function clean() {
 
 [ "$1" = "recreate" ] && clean && shift
 
+MY_ASTYLE_EXCLUDE=""
+[ -d $PROJECT_DIR/build ] && MY_ASTYLE_EXCLUDE="--exclude=$PROJECT_DIR/build $MY_ASTYLE_EXCLUDE"
+[ -d $PROJECT_DIR/include ] && MY_ASTYLE_EXCLUDE="--exclude=$PROJECT_DIR/include $MY_ASTYLE_EXCLUDE"
 
 IS_ASTYLE=$(which astyle)
-[ $? -eq 0 ] && astyle --options=$PROJECT_DIR/etc/astylerc --recursive --exclude=$PROJECT_DIR/build --exclude=$PROJECT_DIR/include *.h *.cxx *.C
+[ $? -eq 0 ] && astyle --options=$PROJECT_DIR/etc/astylerc --recursive $MY_ASTYLE_EXCLUDE *.h *.cxx *.C
 
 
 if [ ! -d $PROJECT_DIR/build ];then
