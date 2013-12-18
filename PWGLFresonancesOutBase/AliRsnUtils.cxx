@@ -141,3 +141,99 @@ TMultiGraph *AliRsnUtils::CreateGraphStatSysErr(const char *name, Color_t color,
 
    return mg;
 }
+
+//______________________________________________________________________________
+Double_t *AliRsnUtils::GetRowFromTextFile(const char *inFile, Int_t row, Int_t numRows, Int_t &n)
+{
+   //
+   // Get Row from Text File and save it to array
+   // Value n will contain number of lines
+   //
+
+   n = 0;
+   ifstream inNumLines;
+   inNumLines.open(gSystem->ExpandPathName(inFile));
+   std::string line;
+   while (getline(inNumLines,line)) n++;
+   inNumLines.close();
+   ifstream in;
+   in.open(gSystem->ExpandPathName(inFile));
+   Double_t x[numRows];
+   Double_t *val= new Double_t[n];
+   Int_t c = 0;
+   while (1) {
+      for (Int_t i=0; i<numRows; i++) {
+         in >> x[i];
+         if (i+1 == row) val[c] = x[i];
+      }
+      // we need end of line
+      if (!in.good()) break;
+      c++;
+   }
+   in.close();
+   return val;
+}
+
+
+//______________________________________________________________________________
+void AliRsnUtils::MultiplyRowInTextFile(const char *inFile, const char *outfile, Int_t row, Double_t factor, Int_t numRows)
+{
+   //
+   // Multiply Row In TextFile
+   //
+
+   Double_t factors[1];
+   factors[0] = factor;
+
+   MultiplyRowInTextFile(inFile, outfile, row, factors, 0, numRows);
+}
+
+//______________________________________________________________________________
+void AliRsnUtils::MultiplyRowInTextFile(const char *inFile, const char *outfile, Int_t row, Double_t *factors, Int_t numFactors, Int_t numRows)
+{
+   //
+   // Multiply Row In TextFile
+   //
+
+   if (row >= numRows) return;
+   if ((row<=0) && (row > numRows)) {
+      ::Error("AliRsnUtils::MultiplyTxt", "Wrong row number (it should be in range from 1 to numRow !!!");
+      return;
+   }
+
+   ifstream in;
+   in.open(gSystem->ExpandPathName(inFile));
+   ofstream out;
+   out.open(outfile);
+   TString line;
+   Double_t x[numRows];
+   Int_t c = 0;
+   while (1) {
+
+      for (Int_t i=0; i<numRows; i++) {
+         in >> x[i];
+         if (i+1==row) {
+            // We are doing only one facrtor
+            if (!numFactors) x[i] = factors[0]*x[i];
+            // we are doing only limited number of factors
+            else if (c < numFactors) x[i] = factors[c]*x[i];
+         }
+      }
+
+      // we need end of line
+      if (!in.good()) break;
+
+      line="";
+      for (Int_t i=0; i<numRows; i++) {
+         line += TString::Format("%e",x[i]).Data();
+         if (i == numRows-1) line += "\n";
+         else line += " ";
+      }
+
+      out << line.Data();
+      c++;
+   }
+   in.close();
+   out.close();
+
+}
