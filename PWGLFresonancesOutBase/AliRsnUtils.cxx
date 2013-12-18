@@ -12,6 +12,7 @@
 #include <TMultiGraph.h>
 #include <TGraphErrors.h>
 #include <TSystem.h>
+#include <TArrayI.h>
 #include "AliRsnUtils.h"
 
 //______________________________________________________________________________
@@ -23,7 +24,7 @@ TH1D *AliRsnUtils::GraphToHistogram(TGraphErrors *gr, Bool_t useGraphEY, Double_
 
    // we return 0, if no grpah
    if ((!gr) || (!gr->GetN())) {
-      ::Error("AliRsnUtils::Graph2Hist", "Graph 'gr' is null or has no points !!!");
+      ::Error("AliRsnUtils::GraphToHistogram", "Graph 'gr' is null or has no points !!!");
       return 0;
    }
 
@@ -33,7 +34,7 @@ TH1D *AliRsnUtils::GraphToHistogram(TGraphErrors *gr, Bool_t useGraphEY, Double_
 
    // check if min is less then xMax of graph
    if (min > xMax) {
-      ::Error("AliRsnUtils::Graph2Hist", "Value 'min' is higher then maximum of x axis of graph 'gr' !!!");
+      ::Error("AliRsnUtils::GraphToHistogram", "Value 'min' is higher then maximum of x axis of graph 'gr' !!!");
       return 0;
    }
 
@@ -72,9 +73,9 @@ TH1D *AliRsnUtils::GraphToHistogram(TGraphErrors *gr, Bool_t useGraphEY, Double_
       }
       bins[nPoints] = x[nPoints - 1] + ex[nPoints - 1];
    } else {
-      ::Warning("AliRsnUtils::Graph2Hist", "One of value ErrorX (ex) of graph 'gr' is zero !!!");
-      ::Warning("AliRsnUtils::Graph2Hist", TString::Format("We are going to guess histogram starting from min=%f !!!", min).Data());
-      ::Warning("AliRsnUtils::Graph2Hist", "Check if histogram is as you expected !!!");
+      ::Warning("AliRsnUtils::GraphToHistogram", "One of value ErrorX (ex) of graph 'gr' is zero !!!");
+      ::Warning("AliRsnUtils::GraphToHistogram", TString::Format("We are going to guess histogram starting from min=%f !!!", min).Data());
+      ::Warning("AliRsnUtils::GraphToHistogram", "Check if histogram is as you expected !!!");
 
       Double_t d;
       // setting low-edge of first bin
@@ -176,7 +177,7 @@ Double_t *AliRsnUtils::GetRowFromTextFile(const char *inFile, Int_t row, Int_t n
 
 
 //______________________________________________________________________________
-void AliRsnUtils::MultiplyRowInTextFile(const char *inFile, const char *outfile, Int_t row, Double_t factor, Int_t numRows)
+void AliRsnUtils::MultiplyRowInTextFile(const char *inFile, const char *outfile, TArrayI *rows, Double_t factor)
 {
    //
    // Multiply Row In TextFile
@@ -185,26 +186,35 @@ void AliRsnUtils::MultiplyRowInTextFile(const char *inFile, const char *outfile,
    Double_t factors[1];
    factors[0] = factor;
 
-   MultiplyRowInTextFile(inFile, outfile, row, factors, 0, numRows);
+   MultiplyRowInTextFile(inFile, outfile, rows, factors, 0);
 }
 
 //______________________________________________________________________________
-void AliRsnUtils::MultiplyRowInTextFile(const char *inFile, const char *outfile, Int_t row, Double_t *factors, Int_t numFactors, Int_t numRows)
+void AliRsnUtils::MultiplyRowInTextFile(const char *inFile, const char *outfile, TArrayI *rows, Double_t *factors, Int_t numFactors)
 {
    //
    // Multiply Row In TextFile
    //
 
-   if (row >= numRows) return;
-   if ((row<=0) && (row > numRows)) {
-      ::Error("AliRsnUtils::MultiplyTxt", "Wrong row number (it should be in range from 1 to numRow !!!");
+   Int_t numRows = 0;
+
+   ifstream testFile;
+   testFile.open(gSystem->ExpandPathName(inFile));
+   if (!testFile.is_open()) {
+      ::Error("AliRsnUtils::MultiplyRowInTextFile", TString::Format("File '%s' could not be opened !!!", gSystem->ExpandPathName(inFile) ).Data());
       return;
    }
+   std::string oneline;
+   getline(testFile,oneline);
+   TString str = oneline;
+   numRows = str.Tokenize(" ")->GetEntries();
+   testFile.close();
 
+   Printf("Num rows %d",numRows);
    ifstream in;
    in.open(gSystem->ExpandPathName(inFile));
    ofstream out;
-   out.open(outfile);
+   out.open(gSystem->ExpandPathName(outfile));
    TString line;
    Double_t x[numRows];
    Int_t c = 0;
@@ -212,11 +222,13 @@ void AliRsnUtils::MultiplyRowInTextFile(const char *inFile, const char *outfile,
 
       for (Int_t i=0; i<numRows; i++) {
          in >> x[i];
-         if (i+1==row) {
-            // We are doing only one facrtor
-            if (!numFactors) x[i] = factors[0]*x[i];
-            // we are doing only limited number of factors
-            else if (c < numFactors) x[i] = factors[c]*x[i];
+         for (Int_t iRow=0; iRow<rows->GetSize(); iRow++) {
+            if (i+1==rows->At(iRow)) {
+               // We are doing only one facrtor
+               if (!numFactors) x[i] = factors[0]*x[i];
+               // we are doing only limited number of factors
+               else if (c < numFactors) x[i] = factors[c]*x[i];
+            }
          }
       }
 
@@ -229,7 +241,7 @@ void AliRsnUtils::MultiplyRowInTextFile(const char *inFile, const char *outfile,
          if (i == numRows-1) line += "\n";
          else line += " ";
       }
-
+      printf(line.Data());
       out << line.Data();
       c++;
    }
