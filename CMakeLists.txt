@@ -14,6 +14,7 @@ include(root-utils)
 add_custom_target(par-all)
 
 add_subdirectory(PWGLFresonancesOutBase)
+add_subdirectory(PWGLFresonancesOutTasks)
 
 include(CPack)
 

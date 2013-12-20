@@ -9,4 +9,6 @@
 #pragma link C++ class AliRsnTask+;
 #pragma link C++ class AliRsnTaskEmpty+;
 
+#pragma link C++ class AliRsnTaskCanvas+;
+
 #endif

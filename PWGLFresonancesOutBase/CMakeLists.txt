@@ -4,6 +4,8 @@ set(SRCS
 AliRsnUtils.cxx
 AliRsnTask.cxx
 AliRsnTaskEmpty.cxx
+AliRsnTaskCanvas.cxx
+
 )
 
 set(INCLUDE_DIRS_DEP )

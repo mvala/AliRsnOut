@@ -10,6 +10,7 @@ void MainRun(TString macro, TString macro_argc, TString projectDir = "")
    gSystem->Load("libGui.so");
    gSystem->Load("libRooFit");
    gSystem->Load("libPWGLFresonancesOutBase.so");
+   gSystem->Load("libPWGLFresonancesOutTasks.so");
 
    Printf(projectDir.Data());
    gSystem->AddIncludePath(TString::Format("-I%sinclude", projectDir.Data()).Data());
