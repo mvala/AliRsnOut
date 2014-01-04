@@ -101,11 +101,13 @@ void AliRsnTaskNSigma::Exec(Option_t * /*option*/)
 TObject *AliRsnTaskNSigma::GetDrawObject()
 {
 
+//   TFile *curFile = gFile;
    TFile::SetCacheFileDir(gSystem->HomeDirectory());
    const char *fn = "root://eos.saske.sk//eos/saske.sk/alice/rsn/PHIKK/LHC11a/ESD_pass4_without_SDD/RSN_20131015/Merged/All/STD2010/00_DEFAULT/qualityonly/RsnOutput.root";
    TFile *f = TFile::Open(fn, "CACHEREAD");
-   f->ls();
+//   f->ls();
    TList *l = (TList *) f->Get("ExtraInfo");
+
 
    TH2D *hNSigmaP = (TH2D *) l->FindObject("K_Phi_qualityonly_STD2010_PRIMARY_mon.TPC_nsigma_p_K");
    Double_t minVal = hNSigmaP->GetXaxis()->GetBinLowEdge(fBinRange[0]);
@@ -113,6 +115,7 @@ TObject *AliRsnTaskNSigma::GetDrawObject()
 
    TH1D *hNsigma = hNSigmaP->ProjectionY(TString::Format("[%.2f,%.2f]", minVal, maxVal).Data(), fBinRange[0], fBinRange[1]);
    hNsigma->GetXaxis()->SetRangeUser(fFitDrawRange[0], fFitDrawRange[1]);
+//   curFile->cd();
 
    if (fUseRooFit) {
       using namespace RooFit;

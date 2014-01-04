@@ -59,7 +59,6 @@ AliRsnTaskCanvas::~AliRsnTaskCanvas()
 void AliRsnTaskCanvas::Exec(Option_t * /*option*/)
 {
    Printf("Running Canvas task ...");
-
    TCanvas *c = 0;
    TCanvas *cf = 0;
    TObject *o;
@@ -68,18 +67,20 @@ void AliRsnTaskCanvas::Exec(Option_t * /*option*/)
    Int_t x,y,x2,y2;
 
    for (Int_t i = 0; i < fInput->GetEntries(); ++i) {
-      o = (TObject *) fInput->At(i);
+      o = fInput->At(i);
       if (o->InheritsFrom("TFolder")) numFolders++;
    }
 
    GetOptimalDivide(numFolders,x,y);
 
    for (Int_t i = 0; i < fInput->GetEntries(); ++i) {
-      o = (TObject *) fInput->At(i);
+      o = fInput->At(i);
       if (o->InheritsFrom("TFolder")) {
          f = (TFolder *) o;
+         f->Print();
          // TODO create list of canvas folders (to cleanup)
          cf = new TCanvas(TString::Format("c_%s", f->GetName()).Data(), TString::Format("%s", f->GetName()).Data());
+         fInput->Add(cf);
          TList *l = (TList *) f->GetListOfFolders();
          GetOptimalDivide(l->GetEntries(),x2,y2);
          cf->Divide(x2,y2);

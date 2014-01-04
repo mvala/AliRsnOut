@@ -21,3 +21,6 @@ tmp
 .cproject
 .project
 *~
+
+AliRsnOut.cbp
+AliRsnOut.layout

@@ -42,10 +42,11 @@ void testNsigma()
 
    main->ExecuteTask();
 
-   return;
+//   return;
 
    TFile *f = TFile::Open("test.root","RECREATE");
-   main->Write();
+   TList *l  = main->GetInput();
+   l->Write();
    f->Close();
 
    gROOT->GetListOfBrowsables()->Add(main,main->GetName());
