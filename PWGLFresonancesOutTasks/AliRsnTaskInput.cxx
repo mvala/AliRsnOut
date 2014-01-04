@@ -108,7 +108,7 @@ Bool_t AliRsnTaskInput::OpenFile()
 }
 
 //______________________________________________________________________________
-TH1D* AliRsnTaskInput::CreateHistogram(const char* name, Int_t idProj, Int_t idForName, TArrayI *idCuts, TArrayD *minCut, TArrayD *maxCut)
+TH1D* AliRsnTaskInput::CreateHistogram(const char* name, Int_t idProj, TArrayI *idCuts, TArrayD *minCut, TArrayD *maxCut)
 {
    if (!fFile) return 0;
 
@@ -118,7 +118,6 @@ TH1D* AliRsnTaskInput::CreateHistogram(const char* name, Int_t idProj, Int_t idF
          return 0;
    }
 
-   Double_t min=0.0,max=0.0;
    if (idCuts) {
       if ((idCuts->GetSize()!=minCut->GetSize()) || (idCuts->GetSize()!=maxCut->GetSize())) {
          Error("AliRsnTaskInput::CreateHistogram","Sizes of idCuts, minCut and maxCut doesn't match !!!");
@@ -127,13 +126,15 @@ TH1D* AliRsnTaskInput::CreateHistogram(const char* name, Int_t idProj, Int_t idF
 
       for (Int_t i=0;i<idCuts->GetSize();i++) {
          sparse->GetAxis(idCuts->At(i))->SetRangeUser(minCut->At(i),maxCut->At(i));
-         if (idCuts->At(i) == idForName) { min = minCut->At(i); max = maxCut->At(i);}
       }
    }
 
    TH1D *h = sparse->Projection(idProj);
    if (!h) return 0;
-   h->SetName(TString::Format("%s_%.2f_%.2f", h->GetName(), min, max).Data());
+   TString oldname = h->GetName();
+   oldname.ReplaceAll("_proj_0","");
+   h->SetName(oldname.Data());
+   h->SetDirectory(0);
 
    return h;
 

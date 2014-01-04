@@ -1,7 +1,10 @@
 #ifndef __CINT__
 #include <TString.h>
 #include <TSystem.h>
+#include <TROOT.h>
 #include <TCanvas.h>
+#include <TFolder.h>
+#include <TFile.h>
 #include <TH1D.h>
 #include <AliRsnTaskInput.h>
 #endif
@@ -31,32 +34,38 @@ void test() {
    Double_t maxPt=5.0;
    Double_t stepPt = 0.2;
    stepPt = -1.0;
-   Double_t stepsPt[] = { 0.2,0.2,0.2,0.2,0.2,
-                          0.2,0.2,0.2,0.2,0.2,
-                          0.5,0.5,0.5,0.5,0.5,
-                          0.5,0.5,0.5,0.5,0.5};
+//   Double_t stepsPt[] = { 0.2,0.2,0.2,0.2,0.2,
+//                          0.2,0.2,0.2,0.2,0.2,
+//                          0.5,0.5,0.5,0.5,0.5,
+//                          0.5,0.5,0.5,0.5,0.5};
+
+   Double_t stepsPt[] = { 1.0, 1.0, 1.0, 1.0, 1.0 };
+
    Int_t idxPt = 1;
    Int_t i=0;
+   TFolder *root = gROOT->GetRootFolder()->AddFolder("rsnMy","My Rsn");
+   root->SetOwner();
+   gROOT->GetListOfBrowsables()->Add(root);
+   TFolder *currFolder;
    for (Double_t curMinPt=minPt; curMinPt<maxPt;curMinPt+=stepsPt[i],i++) {
       stepPt = stepsPt[i];
       Printf("[%.2f,%.2f]",curMinPt,curMinPt+stepPt);
       ids->SetAt(idxPt,idx);mins->SetAt(curMinPt,idx);maxs->SetAt(curMinPt+stepPt,idx);
 
-      TH1D *h1 = input->CreateHistogram("Unlike",idProj,idxPt,ids,mins,maxs);
-      TH1D *h2 = input->CreateHistogram("LikePP",idProj,idxPt,ids,mins,maxs);
-      TH1D *h3 = input->CreateHistogram("LikeMM",idProj,idxPt,ids,mins,maxs);
-      TH1D *h4 = input->CreateHistogram("Mixing",idProj,idxPt,ids,mins,maxs);
+      TH1D *h1 = input->CreateHistogram("Unlike",idProj,ids,mins,maxs);
+      TH1D *h2 = input->CreateHistogram("LikePP",idProj,ids,mins,maxs);
+      TH1D *h3 = input->CreateHistogram("LikeMM",idProj,ids,mins,maxs);
+      TH1D *h4 = input->CreateHistogram("Mixing",idProj,ids,mins,maxs);
 
-      TCanvas *c = new TCanvas(TString::Format("pt_%.2f_%.2f",curMinPt,curMinPt+stepPt).Data(),
-                               TString::Format("pt [%.2f,%.2f]",curMinPt,curMinPt+stepPt).Data());
-      c->Divide(2,2);
-      c->cd(1);
-      if (h1) h1->Draw();
-      c->cd(2);
-      if (h2) h2->Draw();
-      c->cd(3);
-      if (h3) h3->Draw();
-      c->cd(4);
-      if (h4) h4->Draw();
+      currFolder = root->AddFolder(TString::Format("pt_%.2f_%.2f",curMinPt,curMinPt+stepPt).Data(),"");
+      currFolder->Add(h1);
+      currFolder->Add(h2);
+      currFolder->Add(h3);
+      currFolder->Add(h4);
+      currFolder->SetOwner();
    }
+
+   TFile *f = TFile::Open("outTest.root","RECREATE");
+   root->Write();
+   f->Close();
 }

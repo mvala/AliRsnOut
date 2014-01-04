@@ -31,7 +31,7 @@ public:
    void SetCacheDir(TString dir) { fCacheDir = dir; }
 
    Bool_t OpenFile();
-   TH1D* CreateHistogram(const char *name, Int_t idProj, Int_t idForName, TArrayI *idCuts=0, TArrayD *minCut=0, TArrayD *maxCut=0);
+   TH1D* CreateHistogram(const char *name, Int_t idProj, TArrayI *idCuts=0, TArrayD *minCut=0, TArrayD *maxCut=0);
 
 private:
 
