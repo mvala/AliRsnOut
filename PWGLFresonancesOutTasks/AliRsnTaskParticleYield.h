@@ -23,7 +23,15 @@ public:
 
    virtual void   Exec(Option_t *option);
 
+   void SetIDProjection(Int_t idProj) {fIDProjection = idProj; }
+   void SetCuts(TArrayI *ids, TArrayD *mins, TArrayD *maxs);
+
 private:
+
+   Int_t fIDProjection;
+   TArrayI *fCutIDs;
+   TArrayD *fCutMins;
+   TArrayD *fCutMaxs;
 
    ClassDef(AliRsnTaskParticleYield, 1)
 };

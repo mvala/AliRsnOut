@@ -9,7 +9,8 @@
 #include <AliRsnTaskInput.h>
 #endif
 
-void test() {
+void test()
+{
    AliRsnTaskInput *input = new AliRsnTaskInput("input","Test title");
    input->SetCacheDir(gSystem->HomeDirectory());
    input->SetFileName("root://eos.saske.sk//eos/saske.sk/alice/rsn/PHIKK/LHC11a/ESD_pass4_without_SDD/RSN_20131015/Merged/All/STD2010/00_DEFAULT/KTPCnsig30/RsnOutput.root");
@@ -24,10 +25,10 @@ void test() {
    Int_t idx = 0;
 
    // Rapodity
-   ids->AddAt(2,idx);mins->AddAt(-0.5,idx);maxs->AddAt(0.5,idx);idx++;
+   ids->AddAt(2,idx); mins->AddAt(-0.5,idx); maxs->AddAt(0.5,idx); idx++;
 
    // Pt
-   ids->AddAt(1,idx);mins->AddAt(0.0,idx);maxs->AddAt(5.0,idx);/*idx++;*/
+   ids->AddAt(1,idx); mins->AddAt(0.0,idx); maxs->AddAt(5.0,idx); /*idx++;*/
 
 
    Double_t minPt=0.0;
@@ -47,10 +48,10 @@ void test() {
    root->SetOwner();
    gROOT->GetListOfBrowsables()->Add(root);
    TFolder *currFolder;
-   for (Double_t curMinPt=minPt; curMinPt<maxPt;curMinPt+=stepsPt[i],i++) {
+   for (Double_t curMinPt=minPt; curMinPt<maxPt; curMinPt+=stepsPt[i],i++) {
       stepPt = stepsPt[i];
       Printf("[%.2f,%.2f]",curMinPt,curMinPt+stepPt);
-      ids->SetAt(idxPt,idx);mins->SetAt(curMinPt,idx);maxs->SetAt(curMinPt+stepPt,idx);
+      ids->SetAt(idxPt,idx); mins->SetAt(curMinPt,idx); maxs->SetAt(curMinPt+stepPt,idx);
 
       TH1D *h1 = input->CreateHistogram("Unlike",idProj,ids,mins,maxs);
       TH1D *h2 = input->CreateHistogram("LikePP",idProj,ids,mins,maxs);

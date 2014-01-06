@@ -20,9 +20,9 @@ ClassImp(AliRsnTaskInput)
 
 //______________________________________________________________________________
 AliRsnTaskInput::AliRsnTaskInput(const char *name, const char *title) : AliRsnTask(name, title),
-fFileName(),
-fCacheDir(),
-fFile(0)
+   fFileName(),
+   fCacheDir(),
+   fFile(0)
 
 {
    //
@@ -30,14 +30,14 @@ fFile(0)
    //
 
    // We need that current task is executed after sub-tasks
-   fExecTaskBefore = kFALSE;
+//   fExecTaskBefore = kFALSE;
 }
 
 //______________________________________________________________________________
 AliRsnTaskInput::AliRsnTaskInput(const AliRsnTaskInput &copy) : AliRsnTask(copy),
-fFileName(copy.fFileName),
-fCacheDir(copy.fCacheDir),
-fFile(copy.fFile)
+   fFileName(copy.fFileName),
+   fCacheDir(copy.fCacheDir),
+   fFile(copy.fFile)
 
 {
    //
@@ -108,14 +108,14 @@ Bool_t AliRsnTaskInput::OpenFile()
 }
 
 //______________________________________________________________________________
-TH1D* AliRsnTaskInput::CreateHistogram(const char* name, Int_t idProj, TArrayI *idCuts, TArrayD *minCut, TArrayD *maxCut)
+TH1D *AliRsnTaskInput::CreateHistogram(const char *name, Int_t idProj, TArrayI *idCuts, TArrayD *minCut, TArrayD *maxCut)
 {
    if (!fFile) return 0;
 
-   THnSparse *sparse = dynamic_cast<THnSparse*>(fFile->Get(name));
+   THnSparse *sparse = dynamic_cast<THnSparse *>(fFile->Get(name));
    if (!sparse) {
-         Error("AliRsnTaskInput::CreateHistogram",TString::Format("Couldn't open sparse '%s' !!!",name).Data());
-         return 0;
+      Error("AliRsnTaskInput::CreateHistogram",TString::Format("Couldn't open sparse '%s' !!!",name).Data());
+      return 0;
    }
 
    if (idCuts) {
@@ -124,7 +124,7 @@ TH1D* AliRsnTaskInput::CreateHistogram(const char* name, Int_t idProj, TArrayI *
          return 0;
       }
 
-      for (Int_t i=0;i<idCuts->GetSize();i++) {
+      for (Int_t i=0; i<idCuts->GetSize(); i++) {
          sparse->GetAxis(idCuts->At(i))->SetRangeUser(minCut->At(i),maxCut->At(i));
       }
    }
@@ -135,6 +135,8 @@ TH1D* AliRsnTaskInput::CreateHistogram(const char* name, Int_t idProj, TArrayI *
    oldname.ReplaceAll("_proj_0","");
    h->SetName(oldname.Data());
    h->SetDirectory(0);
+
+   delete sparse;
 
    return h;
 
