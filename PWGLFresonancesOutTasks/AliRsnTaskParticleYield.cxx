@@ -90,6 +90,21 @@ void AliRsnTaskParticleYield::Exec(Option_t * /*option*/)
    h2->Print();
    h3->Print();
    h4->Print();
+
+   // Normalize
+   Double_t normMin = 1.045;
+   Double_t normMax = 1.065;
+   Double_t scale = h1->Integral(h1->FindBin(normMin),h1->FindBin(normMax))/h4->Integral(h4->FindBin(normMin),h4->FindBin(normMax));
+   h4->Scale(scale);
+   h1->Add(h4,-1);
+
+//   h1->Print("all");
+   Double_t err;
+   Double_t sigMin=1.019445-3*0.0045;
+   Double_t sigMax=1.019445+3*0.0045;
+   Double_t yield = h1->IntegralAndError(h1->FindBin(sigMin),h1->FindBin(sigMax),err);
+
+   Printf("%f %f",yield, err);
 }
 
 

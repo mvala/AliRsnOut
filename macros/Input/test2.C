@@ -35,7 +35,7 @@ void test2()
    Double_t stepPt = 0.1;
    Int_t maxNumBisns = 100;
    TArrayD stepsPt(maxNumBisns);
-   stepsPt.AddAt(0.2,0);
+//   stepsPt.AddAt(0.2,0);
 //   stepsPt.AddAt(0.5,10);
 //   stepsPt.AddAt(1.0,0);
 //   stepsPt.AddAt(2.0,3);
