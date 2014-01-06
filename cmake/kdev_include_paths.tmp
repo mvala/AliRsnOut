@@ -1,0 +1,3 @@
+@ROOTSYS@/include
+@CMAKE_SOURCE_DIR@/PWGLFresonancesOutBase
+@CMAKE_SOURCE_DIR@/PWGLFresonancesOutTasks

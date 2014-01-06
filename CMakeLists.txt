@@ -16,6 +16,9 @@ add_custom_target(par-all)
 add_subdirectory(PWGLFresonancesOutBase)
 add_subdirectory(PWGLFresonancesOutTasks)
 
+include(kdevelop-utils)
+KDevelopSettings()
+
 include(CPack)
 
 # uninstall
