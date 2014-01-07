@@ -34,10 +34,11 @@ void test2()
    Double_t stepPt = 0.1;
    Int_t maxNumBisns = 100;
    TArrayD stepsPt(maxNumBisns);
-//   stepsPt.AddAt(0.2,0);
-//   stepsPt.AddAt(0.5,10);
+//    stepsPt.AddAt(0.2,0);
+//    stepsPt.AddAt(0.5,10);
 //    stepsPt.AddAt(1.0,0);
 //   stepsPt.AddAt(2.0,3);
+   stepsPt.AddAt(2.5,0);
 //    stepsPt.AddAt(5.0,0);
 
    Int_t idxPt = 1;
@@ -50,7 +51,7 @@ void test2()
       if (stepsPt.At(i)>1e-5) stepPt = stepsPt.At(i);
       Printf("[%.2f,%.2f]",curMinPt,curMinPt+stepPt);
       ids->SetAt(idxPt,idx); mins->SetAt(curMinPt,idx); maxs->SetAt(curMinPt+stepPt,idx);
-      phi = new AliRsnTaskParticleYield(TString::Format("PT_%.2f_%.2f",curMinPt,curMinPt+stepPt),"");
+      phi = new AliRsnTaskParticleYield(TString::Format("PT/%.2f_%.2f",curMinPt,curMinPt+stepPt),"");
       phi->SetIDProjection(idProj);
       phi->SetCuts(ids,mins,maxs);
       input->Add(phi);
@@ -59,12 +60,12 @@ void test2()
 
 //   input->Exec("");
    input->ExecuteTask();
-   
+
    gROOT->GetListOfBrowsables()->Add(input->GetFolder());
-//    TFile *f = TFile::Open("outTest.root","RECREATE");
-//    input->GetFolder()->Write();
-//    f->Close();
-   
+   TFile *f = TFile::Open("outTest.root","RECREATE");
+   input->GetFolder()->Write();
+   f->Close();
+
    return;
 
 }

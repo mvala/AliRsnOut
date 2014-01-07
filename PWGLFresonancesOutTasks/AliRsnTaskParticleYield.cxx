@@ -8,6 +8,7 @@
 #include <TArrayI.h>
 #include <TArrayD.h>
 #include <TH1D.h>
+#include <TFolder.h>
 
 #include "AliRsnTaskInput.h"
 #include "AliRsnTaskParticleYield.h"
@@ -73,6 +74,7 @@ AliRsnTaskParticleYield::~AliRsnTaskParticleYield()
    delete fCutMaxs;
 }
 
+//______________________________________________________________________________
 void AliRsnTaskParticleYield::Exec(Option_t * /*option*/)
 {
    // Put your task job
@@ -91,6 +93,8 @@ void AliRsnTaskParticleYield::Exec(Option_t * /*option*/)
    h3->Print();
    h4->Print();
 
+   // Choose backgrouns and apply action
+
    // Normalize
    Double_t normMin = 1.045;
    Double_t normMax = 1.065;
@@ -105,9 +109,18 @@ void AliRsnTaskParticleYield::Exec(Option_t * /*option*/)
    Double_t yield = h1->IntegralAndError(h1->FindBin(sigMin),h1->FindBin(sigMax),err);
 
    Printf("%f %f",yield, err);
+//    h1->Rebin(4);
+
+//    h1->Fit("gaus", "", "", sigMin, sigMax);
+//    h1->Draw();
+
+   Printf("%s",GetFullPath().Data());
+   if (fFolder) fFolder->Add(h1);
+
 }
 
 
+//______________________________________________________________________________
 void AliRsnTaskParticleYield::SetCuts(TArrayI *ids, TArrayD *mins, TArrayD *maxs)
 {
    if (fCutIDs) delete fCutIDs;
