@@ -12,6 +12,7 @@
 #include <TTask.h>
 
 class TList;
+class TFolder;
 class AliRsnTask : public TTask
 {
 public:
@@ -31,13 +32,16 @@ public:
    TString        GetFullPath(TString delim="/", Bool_t removeFirstChar = kFALSE) const;
    AliRsnTask    *GetListByPath(TString path="/") const;
 
-   TList         *GetInput() { return fInput;}
+   TList         *GetInput() const { return fInput;}
+   void          SetFolder(TFolder *folder) { fFolder = folder;}
+   TFolder       *GetFolder() const { return fFolder;}
 
 protected:
 
    AliRsnTask *fParent;
    Bool_t      fExecTaskBefore;
    TList      *fInput;
+   TFolder    *fFolder;
 
    ClassDef(AliRsnTask, 1)
 };

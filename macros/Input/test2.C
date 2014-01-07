@@ -12,10 +12,9 @@
 
 void test2()
 {
-   AliRsnTaskInput *input = new AliRsnTaskInput("input","Test title");
+   AliRsnTaskInput *input = new AliRsnTaskInput("Phi","Test title");
    input->SetCacheDir(gSystem->HomeDirectory());
    input->SetFileName("root://eos.saske.sk//eos/saske.sk/alice/rsn/PHIKK/LHC11a/ESD_pass4_without_SDD/RSN_20131015/Merged/All/STD2010/00_DEFAULT/KTPCnsig30/RsnOutput.root");
-
 
    Int_t numCuts = 2;
    Int_t idProj = 0;
@@ -37,8 +36,9 @@ void test2()
    TArrayD stepsPt(maxNumBisns);
 //   stepsPt.AddAt(0.2,0);
 //   stepsPt.AddAt(0.5,10);
-//   stepsPt.AddAt(1.0,0);
+//    stepsPt.AddAt(1.0,0);
 //   stepsPt.AddAt(2.0,3);
+//    stepsPt.AddAt(5.0,0);
 
    Int_t idxPt = 1;
    Int_t i=0;
@@ -59,7 +59,12 @@ void test2()
 
 //   input->Exec("");
    input->ExecuteTask();
-
+   
+   gROOT->GetListOfBrowsables()->Add(input->GetFolder());
+//    TFile *f = TFile::Open("outTest.root","RECREATE");
+//    input->GetFolder()->Write();
+//    f->Close();
+   
    return;
 
 }

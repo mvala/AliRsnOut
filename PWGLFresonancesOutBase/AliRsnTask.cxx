@@ -8,6 +8,7 @@
 
 #include <TROOT.h>
 #include <TString.h>
+#include <TFolder.h>
 
 #include "AliRsnTask.h"
 
@@ -58,6 +59,9 @@ AliRsnTask::~AliRsnTask()
 //
 
    fInput->Delete();
+   
+//    delete fInput;
+//    delete fFolder;
 }
 
 //______________________________________________________________________________
@@ -66,7 +70,12 @@ void AliRsnTask::Add(TTask *task)
    TTask::Add(task);
 
    AliRsnTask *se = dynamic_cast<AliRsnTask *>(task);
-   if (se) se->SetParent(this);
+   if (se) {
+     if (!fParent) fFolder = gROOT->GetRootFolder()->AddFolder(GetName(),GetTitle());
+     se->SetParent(this);
+     se->SetFolder(GetFolder()->AddFolder(se->GetName(),se->GetTitle()));
+  }
+   
 }
 
 //______________________________________________________________________________
@@ -178,6 +187,8 @@ void AliRsnTask::ExecuteTask(Option_t *option)
    // within a task. This parameter is passed also to all the subtasks.
 
    if (!fInput) fInput = new TList();
+   if (!fParent && !fFolder) fFolder = gROOT->GetRootFolder()->AddFolder(GetName(),GetTitle());
+
 
    if (fgBeginTask) {
       Error("ExecuteTask", "Cannot execute task:%s, already running task: %s", GetName(), fgBeginTask->GetName());
