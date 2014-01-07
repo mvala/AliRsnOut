@@ -9,14 +9,21 @@
 #include <TROOT.h>
 #include <TString.h>
 #include <TFolder.h>
+#include <TCollection.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <Rtypes.h>
 
 #include "AliRsnTask.h"
 
 ClassImp(AliRsnTask)
 
 //______________________________________________________________________________
-AliRsnTask::AliRsnTask(const char *name, const char *title) :
-   TTask(name, title), fParent(0), fExecTaskBefore(kTRUE), fInput(0)
+AliRsnTask::AliRsnTask(const char *name, const char *title) : TTask(name, title),
+   fParent(0),
+   fExecTaskBefore(kTRUE),
+   fInput(0),
+   fFolder(0)
 {
 //
 // Default constructor
@@ -59,7 +66,7 @@ AliRsnTask::~AliRsnTask()
 //
 
    fInput->Delete();
-   
+
 //    delete fInput;
 //    delete fFolder;
 }
@@ -69,13 +76,38 @@ void AliRsnTask::Add(TTask *task)
 {
    TTask::Add(task);
 
+   if (!fParent && !fFolder) fFolder = gROOT->GetRootFolder()->AddFolder(GetName(),GetTitle());
+
    AliRsnTask *se = dynamic_cast<AliRsnTask *>(task);
    if (se) {
-     if (!fParent) fFolder = gROOT->GetRootFolder()->AddFolder(GetName(),GetTitle());
-     se->SetParent(this);
-     se->SetFolder(GetFolder()->AddFolder(se->GetName(),se->GetTitle()));
-  }
-   
+      se->SetParent(this);
+      TString name = se->GetName();
+      if (name.Contains("/")) {
+         TObjArray *folders = name.Tokenize("/");
+         TFolder *folder = fFolder;
+         TObjString *str;
+         for( int i=0; i<folders->GetEntries(); ++i ) {
+            str = (TObjString *)folders->At(i);
+            TIter next(folder->GetListOfFolders());
+            TFolder *folderTmp;
+            Bool_t found = kFALSE;
+            while ((folderTmp = (TFolder *)next())) {
+               if (!str->GetString().CompareTo(folderTmp->GetName())) {
+                  folder = folderTmp;
+                  found = kTRUE;
+                  break;
+               }
+            }
+            if (found) continue;
+            folder = folder->AddFolder(str->GetString().Data(),se->GetTitle());
+            se->SetFolder(folder);
+         }
+         name.ReplaceAll("/","_");
+         se->SetName(name.Data());
+      } else {
+         se->SetFolder(fFolder->AddFolder(se->GetName(),se->GetTitle()));
+      }
+   }
 }
 
 //______________________________________________________________________________
