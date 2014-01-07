@@ -93,29 +93,63 @@ void AliRsnTaskParticleYield::Exec(Option_t * /*option*/)
    h3->Print();
    h4->Print();
 
+   TH1D *hSubLikeSum = (TH1D *)h1->Clone();
+   TH1D *hLikeSumNorm = (TH1D *)h2->Clone();
+   hLikeSumNorm->Add(h3);
+
+   TH1D *hSubMixing = (TH1D *)h1->Clone();
+   TH1D *hMixNorm = (TH1D *)h4->Clone();;
+
+
    // Choose backgrouns and apply action
 
    // Normalize
    Double_t normMin = 1.045;
    Double_t normMax = 1.065;
-   Double_t scale = h1->Integral(h1->FindBin(normMin),h1->FindBin(normMax))/h4->Integral(h4->FindBin(normMin),h4->FindBin(normMax));
-   h4->Scale(scale);
-   h1->Add(h4,-1);
+   Double_t scale = hSubLikeSum->Integral(hSubLikeSum->FindBin(normMin),hSubLikeSum->FindBin(normMax))/
+                    hLikeSumNorm->Integral(hLikeSumNorm->FindBin(normMin),hLikeSumNorm->FindBin(normMax));
+
+   hLikeSumNorm->Scale(scale);
+   hSubLikeSum->Add(hLikeSumNorm,-1);
+
+   scale = hSubMixing->Integral(hSubMixing->FindBin(normMin),hSubMixing->FindBin(normMax))/
+           hMixNorm->Integral(hMixNorm->FindBin(normMin),hMixNorm->FindBin(normMax));
+
+   hMixNorm->Scale(scale);
+   hSubMixing->Add(hMixNorm,-1);
+
 
 //   h1->Print("all");
    Double_t err;
    Double_t sigMin=1.019445-3*0.0045;
    Double_t sigMax=1.019445+3*0.0045;
-   Double_t yield = h1->IntegralAndError(h1->FindBin(sigMin),h1->FindBin(sigMax),err);
+   Double_t yield = hSubLikeSum->IntegralAndError(hSubLikeSum->FindBin(sigMin),hSubLikeSum->FindBin(sigMax),err);
+   Printf("Mixing %f %f",yield, err);
 
-   Printf("%f %f",yield, err);
-//    h1->Rebin(4);
+   yield = hSubMixing->IntegralAndError(hSubMixing->FindBin(sigMin),hSubMixing->FindBin(sigMax),err);
+   Printf("Mixing %f %f",yield, err);
+
+
+   //    h1->Rebin(4);
 
 //    h1->Fit("gaus", "", "", sigMin, sigMax);
 //    h1->Draw();
 
    Printf("%s",GetFullPath().Data());
-   if (fFolder) fFolder->Add(h1);
+   hLikeSumNorm->SetName("LikeSumNorm");
+   hSubLikeSum->SetName("Substracted_LikeSum");
+   hMixNorm->SetName("MixNorm");
+   hSubMixing->SetName("Substracted_Mixing");
+   if (fFolder) {
+      fFolder->Add(h1);
+      fFolder->Add(h2);
+      fFolder->Add(h3);
+      fFolder->Add(h4);
+      fFolder->Add(hLikeSumNorm);
+      fFolder->Add(hSubLikeSum);
+      fFolder->Add(hMixNorm);
+      fFolder->Add(hSubMixing);
+   }
 
 }
 
