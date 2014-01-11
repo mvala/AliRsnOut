@@ -11,7 +11,8 @@
 
 #include <Rtypes.h>
 #include "AliRsnTask.h"
-
+class RooPlot;
+class TH1;
 class AliRsnTaskParticleYield : public AliRsnTask
 {
 public:
@@ -25,6 +26,9 @@ public:
 
    void SetIDProjection(Int_t idProj) {fIDProjection = idProj; }
    void SetCuts(TArrayI *ids, TArrayD *mins, TArrayD *maxs);
+
+   RooPlot *DoFit(TH1 *h);
+   void ShiftHistogram(TH1 *h);
 
 private:
 
