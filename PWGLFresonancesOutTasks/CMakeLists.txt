@@ -3,6 +3,7 @@ set(MODULE PWGLFresonancesOutTasks)
 set(SRCS
 AliRsnTaskInput.cxx
 AliRsnTaskNSigma.cxx
+AliRsnTaskSpectraBin.cxx
 AliRsnTaskParticleYield.cxx
 )
 

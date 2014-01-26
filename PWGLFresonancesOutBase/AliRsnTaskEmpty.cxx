@@ -52,6 +52,7 @@ AliRsnTaskEmpty::~AliRsnTaskEmpty()
    //
 }
 
+//______________________________________________________________________________
 void AliRsnTaskEmpty::Exec(Option_t * /*option*/)
 {
    // Put your task job

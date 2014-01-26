@@ -105,6 +105,7 @@ void AliRsnTask::Add(TTask *task)
          name.ReplaceAll("/","_");
          se->SetName(name.Data());
       } else {
+//          name.ReplaceAll("/","_");
          se->SetFolder(fFolder->AddFolder(se->GetName(),se->GetTitle()));
       }
    }

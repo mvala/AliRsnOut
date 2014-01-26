@@ -6,5 +6,6 @@
 
 #pragma link C++ class AliRsnTaskInput+;
 #pragma link C++ class AliRsnTaskNSigma+;
+#pragma link C++ class AliRsnTaskSpectraBin+;
 #pragma link C++ class AliRsnTaskParticleYield+;
 #endif
