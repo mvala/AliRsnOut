@@ -76,38 +76,90 @@ void AliRsnTask::Add(TTask *task)
 {
    TTask::Add(task);
 
-   if (!fParent && !fFolder) fFolder = gROOT->GetRootFolder()->AddFolder(GetName(),GetTitle());
+//    if (!fParent && !fFolder) fFolder = gROOT->GetRootFolder()->AddFolder(GetName(),GetTitle());
+//    else if (fParent && !fFolder) fFolder = fParent->GetFolder()->AddFolder(GetName(),GetTitle());
 
    AliRsnTask *se = dynamic_cast<AliRsnTask *>(task);
    if (se) {
       se->SetParent(this);
-      TString name = se->GetName();
-      if (name.Contains("/")) {
-         TObjArray *folders = name.Tokenize("/");
-         TFolder *folder = fFolder;
-         TObjString *str;
-         for( int i=0; i<folders->GetEntries(); ++i ) {
-            str = (TObjString *)folders->At(i);
-            TIter next(folder->GetListOfFolders());
-            TFolder *folderTmp;
-            Bool_t found = kFALSE;
-            while ((folderTmp = (TFolder *)next())) {
-               if (!str->GetString().CompareTo(folderTmp->GetName())) {
-                  folder = folderTmp;
-                  found = kTRUE;
-                  break;
-               }
-            }
-            if (found) continue;
-            folder = folder->AddFolder(str->GetString().Data(),se->GetTitle());
-            se->SetFolder(folder);
-         }
-         name.ReplaceAll("/","_");
-         se->SetName(name.Data());
-      } else {
+
+   }
+//       TString name = se->GetName();
+//       if (name.Contains("/")) {
+//          TObjArray *folders = name.Tokenize("/");
+//          TFolder *folder = fFolder;
+//          TObjString *str;
+//          for( int i=0; i<folders->GetEntries(); ++i ) {
+//             str = (TObjString *)folders->At(i);
+//             TIter next(folder->GetListOfFolders());
+//             TFolder *folderTmp;
+//             Bool_t found = kFALSE;
+//             while ((folderTmp = (TFolder *)next())) {
+//                if (!str->GetString().CompareTo(folderTmp->GetName())) {
+//                   folder = folderTmp;
+//                   found = kTRUE;
+//                   break;
+//                }
+//             }
+//             if (found) continue;
+//             folder = folder->AddFolder(str->GetString().Data(),se->GetTitle());
+//             se->SetFolder(folder);
+//          }
 //          name.ReplaceAll("/","_");
-         se->SetFolder(fFolder->AddFolder(se->GetName(),se->GetTitle()));
+//          se->SetName(name.Data());
+//       } else {
+// //          name.ReplaceAll("/","_");
+// //          Printf("Creating folder %s %s",fFolder->GetName(),se->GetFolder()->GetName());
+//          Printf("Creating folder %s %s",fFolder->GetName(),name.Data());
+//          se->SetFolder(fFolder->AddFolder(se->GetName(),se->GetTitle()));
+//       }
+//    }
+}
+
+//______________________________________________________________________________
+void AliRsnTask::InitOutput()
+{
+
+   if (!fParent) fFolder = gROOT->GetRootFolder()->AddFolder(GetName(),GetTitle());
+   else {
+      CreateDirFromName();
+   }
+   TIter next(fTasks);
+   AliRsnTask *se;
+   while ((se = (AliRsnTask *) next())) {
+      se->InitOutput();
+   }
+
+}
+
+//______________________________________________________________________________
+void AliRsnTask::CreateDirFromName()
+{
+   TString name = GetName();
+   if (name.Contains("/")) {
+      TObjArray *folders = name.Tokenize("/");
+      TFolder *folder = fParent->GetFolder();
+      if (!folder) return;
+      TObjString *str;
+      for( int i=0; i<folders->GetEntries(); ++i ) {
+         str = (TObjString *)folders->At(i);
+         TIter next(folder->GetListOfFolders());
+         TFolder *folderTmp;
+         Bool_t found = kFALSE;
+         while ((folderTmp = (TFolder *)next())) {
+            if (!str->GetString().CompareTo(folderTmp->GetName())) {
+               folder = folderTmp;
+               found = kTRUE;
+            }
+         }
+         if (found) continue;
+         folder = folder->AddFolder(str->GetString().Data(),GetTitle());
+         SetFolder(folder);
       }
+      name.ReplaceAll("/","_");
+      SetName(name.Data());
+   } else {
+      SetFolder(fParent->GetFolder()->AddFolder(GetName(),GetTitle()));
    }
 }
 
@@ -219,9 +271,9 @@ void AliRsnTask::ExecuteTask(Option_t *option)
    // The option parameter may be used to select different execution steps
    // within a task. This parameter is passed also to all the subtasks.
 
-   if (!fInput) fInput = new TList();
-   if (!fParent && !fFolder) fFolder = gROOT->GetRootFolder()->AddFolder(GetName(),GetTitle());
 
+   if (!fInput) fInput = new TList();
+   if (!fParent) InitOutput();
 
    if (fgBeginTask) {
       Error("ExecuteTask", "Cannot execute task:%s, already running task: %s", GetName(), fgBeginTask->GetName());
@@ -235,17 +287,70 @@ void AliRsnTask::ExecuteTask(Option_t *option)
 
    if (fBreakin) return;
 
-   if (fExecTaskBefore) Exec(option);
+   if (fExecTaskBefore) {
+      Exec(option);
+      if (fExecTaskBefore) fHasExecuted = kTRUE;
+   }
 
-   fHasExecuted = kTRUE;
    ExecuteTasks(option);
 
-   if (!fExecTaskBefore) Exec(option);
+   if (!fExecTaskBefore) {
+      Exec(option);
+      fHasExecuted = kTRUE;
+   }
 
    if (fBreakout) return;
 
    if (!fgBreakPoint) {
       fgBeginTask->CleanTasks();
       fgBeginTask = 0;
+   }
+}
+
+void AliRsnTask::ExecuteTasks(Option_t *option)
+{
+   // Execute all the subtasks of a task.
+
+   TIter next(fTasks);
+   AliRsnTask *task;
+   while((task=(AliRsnTask *)next())) {
+      if (fgBreakPoint) return;
+      if (!task->IsActive()) continue;
+      if (task->fHasExecuted) {
+         task->ExecuteTasks(option);
+         continue;
+      }
+      if (task->fBreakin == 1) {
+         printf("Break at entry of task: %s\n",task->GetName());
+         fgBreakPoint = this;
+         task->fBreakin++;
+         return;
+      }
+
+//       if (gDebug > 1) {
+//          TROOT::IndentLevel();
+//          cout<<"Execute task:"<<task->GetName()<<" : "<<task->GetTitle()<<endl;
+//          TROOT::IncreaseDirLevel();
+//       }
+
+      if (task->fExecTaskBefore) {
+         task->Exec(option);
+         if (task->fExecTaskBefore) task->fHasExecuted = kTRUE;
+      }
+
+      task->ExecuteTasks(option);
+
+      if (!task->fExecTaskBefore) {
+         task->Exec(option);
+         task->fHasExecuted = kTRUE;
+      }
+
+      if (gDebug > 1) TROOT::DecreaseDirLevel();
+      if (task->fBreakout == 1) {
+         printf("Break at exit of task: %s\n",task->GetName());
+         fgBreakPoint = this;
+         task->fBreakout++;
+         return;
+      }
    }
 }

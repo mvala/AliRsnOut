@@ -12,12 +12,38 @@
 #endif
 
 TList *CreateVariations();
+TObject *CreateQC(const char *qcName="00_DEFAULT",const char *pid="KTPCnsig30");
 
-TObject *test2()
+void test2(const char *taskInputFile = "/tmp/Phi.root")
 {
-   AliRsnTaskInput *input = new AliRsnTaskInput("Phi","Test title");
+   AliRsnTask *phiROOT = new AliRsnTask("Phi","PHIKK");
+   phiROOT->Add((AliRsnTask *) CreateQC("00_DEFAULT"));
+   phiROOT->Add((AliRsnTask *) CreateQC("NCLSTTPC50"));
+   phiROOT->Add((AliRsnTask *) CreateQC("NCLSTTPC80"));
+   phiROOT->Print();
+   phiROOT->ExecuteTask();
+
+   gROOT->GetListOfBrowsables()->Add(phiROOT->GetFolder());
+//    gROOT->cd();
+   TFile *f = TFile::Open(taskInputFile,"RECREATE");
+   TFolder *folderOut = new TFolder("out","Out");
+   folderOut->Add(phiROOT->GetFolder());
+   folderOut->Write();
+   phiROOT->Write();
+   f->Close();
+
+}
+TObject *CreateQC(const char *qcName,const char *pid)
+{
+
+   TString base = "root://eos.saske.sk//eos/saske.sk/alice/rsn/PHIKK/LHC11a/ESD_pass4_without_SDD/RSN_20131015/Merged/All/STD2010/";
+   AliRsnTaskInput *input = new AliRsnTaskInput(TString::Format("QC_%s/%s",qcName,pid),"Test title");
    input->SetCacheDir(gSystem->HomeDirectory());
-   input->SetFileName("root://eos.saske.sk//eos/saske.sk/alice/rsn/PHIKK/LHC11a/ESD_pass4_without_SDD/RSN_20131015/Merged/All/STD2010/00_DEFAULT/KTPCnsig30/RsnOutput.root");
+   base += qcName;
+   base += "/";
+   base += pid;
+   base += "/RsnOutput.root";
+   input->SetFileName(base.Data());
 //    input->SetFileName("root://eos.saske.sk//eos/saske.sk/alice/rsn/PHIKK/LHC11a/ESD_pass4_without_SDD/RSN_20131015/Merged/All/STD2010/00_DEFAULT/qualityonly/RsnOutput.root");
 
    Int_t numCuts = 10;
@@ -38,8 +64,10 @@ TObject *test2()
 
    TList *lVariations = CreateVariations();
 
-   Double_t minPt=1.0;
-   Double_t maxPt=2.0;
+   Double_t minPt=0.4;
+   Double_t maxPt=5.0;
+   minPt=1.0;
+   maxPt=2.0;
    Double_t stepPt = 0.1;
    Int_t maxNumBisns = 100;
    TArrayD stepsPt(maxNumBisns);
@@ -60,7 +88,8 @@ TObject *test2()
       if (stepsPt.At(i)>1e-5) stepPt = stepsPt.At(i);
       Printf("[%.2f,%.2f]",curMinPt,curMinPt+stepPt);
       ids->SetAt(idxPt,idx); mins->SetAt(curMinPt,idx); maxs->SetAt(curMinPt+stepPt,idx);
-      phi = new AliRsnTaskSpectraBin(TString::Format("0-10/PT/%.2f_%.2f",curMinPt,curMinPt+stepPt),"");
+//       phi = new AliRsnTaskSpectraBin(TString::Format("0-10/PT/%.2f_%.2f",curMinPt,curMinPt+stepPt),"");
+      phi = new AliRsnTaskSpectraBin(TString::Format("PT/%.2f_%.2f",curMinPt,curMinPt+stepPt),"");
       phi->SetIDProjection(idProj);
       phi->SetCuts(ids,mins,maxs);
       input->Add(phi);
@@ -68,16 +97,8 @@ TObject *test2()
       phi->AddVariations(lVariations);
 
       if (stepsPt.At(i)>smallVal) stepPt = stepsPt.At(i);
+
    }
-
-//   input->Exec("");
-   input->ExecuteTask();
-
-   gROOT->GetListOfBrowsables()->Add(input->GetFolder());
-//    TFile *f = TFile::Open("outTest.root","RECREATE");
-//    input->GetFolder()->Write();
-//    f->Close();
-
    return input;
 
 }
@@ -91,6 +112,7 @@ TList *CreateVariations()
    py->SetHistograms(AliRsnTaskParticleYield::kSigBkg,"Unlike",AliRsnTaskParticleYield::kSum);
    py->SetHistograms(AliRsnTaskParticleYield::kBkg,"Mixing",AliRsnTaskParticleYield::kSum);
    lVariations->Add(py);
+   return lVariations;
    py = (AliRsnTaskParticleYield *) py->Clone();
    py->SetName("NORM1");
    py->SetNormalizationRange(1.035,1.075);
@@ -101,6 +123,13 @@ TList *CreateVariations()
    py = (AliRsnTaskParticleYield *) py->Clone();
    py->SetName("NORM2");
    py->SetNormalizationRange(1.035,1.085);
+   py->SetFitRange(1.0,1.04);
+   py->SetHistograms(AliRsnTaskParticleYield::kSigBkg,"Unlike",AliRsnTaskParticleYield::kSum);
+   py->SetHistograms(AliRsnTaskParticleYield::kBkg,"Mixing",AliRsnTaskParticleYield::kSum);
+   lVariations->Add(py);
+   py = (AliRsnTaskParticleYield *) py->Clone();
+   py->SetName("NORM3");
+   py->SetNormalizationRange(0.995,1.005);
    py->SetFitRange(1.0,1.04);
    py->SetHistograms(AliRsnTaskParticleYield::kSigBkg,"Unlike",AliRsnTaskParticleYield::kSum);
    py->SetHistograms(AliRsnTaskParticleYield::kBkg,"Mixing",AliRsnTaskParticleYield::kSum);

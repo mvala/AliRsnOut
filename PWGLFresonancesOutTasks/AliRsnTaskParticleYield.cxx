@@ -107,7 +107,7 @@ void AliRsnTaskParticleYield::Exec(Option_t * /*option*/)
    // Put your task job
    //
 
-   Printf("Exec Yield %s %p",GetName(),fFolder);
+   Printf("Exec Yield %s ...",GetName());
 
    TH1D *hScaled = (TH1D *) fHist[kBkg]->Clone();
    TH1D *hSub = (TH1D *) fHist[kSigBkg]->Clone();
@@ -132,8 +132,6 @@ void AliRsnTaskParticleYield::Exec(Option_t * /*option*/)
 //    fFit[1] = 1.019445+3*0.0045;
 
    DoFit(hSub,fFit[0],fFit[1]);
-
-
 
 }
 
@@ -183,7 +181,7 @@ void AliRsnTaskParticleYield::GenerateHistograms(TList *l)
 //______________________________________________________________________________
 void AliRsnTaskParticleYield::ShiftHistogram(TH1 *h)
 {
-   Printf("Shifting %f",h->GetMinimum());
+//    Printf("Shifting %f",h->GetMinimum());
    Double_t mymin = h->GetMinimum();
    if (mymin<0) {
       for (Int_t i=1; i< h->GetXaxis()->GetNbins()+1; i++) {

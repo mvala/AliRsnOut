@@ -25,6 +25,7 @@ public:
    virtual void   Add(AliRsnTask *se) { Add((TTask *)se); }
    virtual void   Print(Option_t *option = "") const;
    virtual void   ExecuteTask(Option_t *option="");
+   virtual void ExecuteTasks(Option_t *option);
 
    void           SetParent(AliRsnTask *se) { fParent = se; }
    AliRsnTask    *GetParent() const { return fParent; }
@@ -35,6 +36,11 @@ public:
    TList         *GetInput() const { return fInput;}
    void          SetFolder(TFolder *folder) { fFolder = folder;}
    TFolder       *GetFolder() const { return fFolder;}
+
+   void          SetHasExecuted(Bool_t hasExecuted) { fHasExecuted = hasExecuted;}
+
+   void          InitOutput();
+   void          CreateDirFromName();
 
 protected:
 

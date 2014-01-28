@@ -12,6 +12,7 @@
 #include <TArrayD.h>
 #include <TAxis.h>
 #include <THnSparse.h>
+#include <TString.h>
 
 
 #include "AliRsnTaskInput.h"
@@ -23,7 +24,6 @@ AliRsnTaskInput::AliRsnTaskInput(const char *name, const char *title) : AliRsnTa
    fFileName(),
    fCacheDir(),
    fFile(0)
-
 {
    //
    // Defauult constructor
@@ -78,10 +78,18 @@ void AliRsnTaskInput::Exec(Option_t * /*option*/)
 {
 
    // Put your task job
-   if (!OpenFile()) {
-      Error("AliRsnTaskInput::Exec",TString::Format("File '%s' could not be opened !!!",fFileName.Data()).Data());
-      // TODO - Disable all sub tasks
-      return;
+
+   if (fExecTaskBefore) {
+//       Printf("Exec Input %s (Before)",fFileName.Data());
+      if (!OpenFile()) {
+         Error("AliRsnTaskInput::Exec",TString::Format("File '%s' could not be opened !!!",fFileName.Data()).Data());
+         // TODO - Disable all sub tasks
+         return;
+      }
+      fExecTaskBefore = kFALSE;
+   } else {
+//       Printf("Exec Input %s (AFTER)",fFileName.Data());
+      if (fFile) fFile->Close();
    }
 }
 
@@ -89,7 +97,7 @@ void AliRsnTaskInput::Exec(Option_t * /*option*/)
 Bool_t AliRsnTaskInput::OpenFile()
 {
    // if file exists then return true
-   if (fFile) return kTRUE;
+   if (fFile && fFile->IsOpen()) return kTRUE;
 
    if (fFileName.IsNull()) return kFALSE;
 
@@ -99,8 +107,8 @@ Bool_t AliRsnTaskInput::OpenFile()
       opt = "CACHEREAD";
    }
 
-
    fFile = TFile::Open(fFileName.Data(),opt.Data());
+   fFile->ls();
 
    if (fFile) return kTRUE;
 
@@ -111,7 +119,6 @@ Bool_t AliRsnTaskInput::OpenFile()
 TH1D *AliRsnTaskInput::CreateHistogram(const char *name, Int_t idProj, TArrayI *idCuts, TArrayD *minCut, TArrayD *maxCut)
 {
    if (!fFile) return 0;
-
    THnSparse *sparse = dynamic_cast<THnSparse *>(fFile->Get(name));
    if (!sparse) {
       Error("AliRsnTaskInput::CreateHistogram",TString::Format("Couldn't open sparse '%s' !!!",name).Data());

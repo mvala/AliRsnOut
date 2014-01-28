@@ -27,9 +27,6 @@ public:
    void SetIDProjection(Int_t idProj) {fIDProjection = idProj; }
    void SetCuts(TArrayI *ids, TArrayD *mins, TArrayD *maxs);
 
-   void DoFit(TH1 *h);
-   void ShiftHistogram(TH1 *h);
-
    void AddVariations(TList *l);
 
 private:
